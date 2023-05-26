@@ -1,4 +1,6 @@
+//import 'dart:math';
 import 'package:flutter/material.dart';
+
 import 'home.dart';
 
 void main() => runApp(const MyApp());
@@ -19,14 +21,10 @@ class RobotEyesApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Robot Eyes'),
-      ),
+      backgroundColor: const Color.fromARGB(255, 75, 72, 72),
       body: InkWell(
         onTap: () {
-          //print('Presioné la pantalla');
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const GridCardApp()),
@@ -134,7 +132,7 @@ class _RobotEyesState extends State<RobotEyes>
                 animation: _animationController,
                 builder: (context, child) {
                   return Eye(
-                    color: Colors.white,
+                    color: Colors.black,
                     borderColor: _colorAnimation.value,
                     borderWidth: containerSize * 0.05,
                     sizeFactor: containerSize,
@@ -148,7 +146,7 @@ class _RobotEyesState extends State<RobotEyes>
                 animation: _animationController,
                 builder: (context, child) {
                   return Eye(
-                    color: Colors.white,
+                    color: Colors.black,
                     borderColor: _colorAnimation.value,
                     borderWidth: containerSize * 0.05,
                     sizeFactor: containerSize,
