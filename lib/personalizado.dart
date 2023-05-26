@@ -1,16 +1,22 @@
 import 'package:flutter/material.dart';
 
-import 'temperatura.dart';
+import 'oxigenacion.dart';
+
 class PersonalizadoInterface extends StatelessWidget {
-  const PersonalizadoInterface({super.key});
+  const PersonalizadoInterface({Key? key}) : super(key: key);
 
-
- @override
+  @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
           title: const Text('Formulario'),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+          ),
         ),
         body: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -63,13 +69,13 @@ class PersonalizadoInterface extends StatelessWidget {
                   ),
                   const SizedBox(height: 16.0),
                   ElevatedButton(
-                    child: const Text('Continuar con las mediciones de signos vitales '),
-                  onPressed: () {
-                    Navigator.push(
-                   context,
-                    MaterialPageRoute(builder: (context) => const TemperatureInterface()),
-                   );
-                },
+                    child: const Text('Continuar con las mediciones de signos vitales'),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const OxygenPulseTemperatureInterface()),
+                      );
+                    },
                   ),
                 ],
               ),

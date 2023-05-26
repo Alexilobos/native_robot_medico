@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import 'personalizado.dart';
+import 'temperatura.dart';
 
 class GridCardApp extends StatelessWidget {
-  const GridCardApp({super.key});
+  const GridCardApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -19,10 +20,9 @@ class GridCardApp extends StatelessWidget {
         mainAxisSpacing: 20,
         crossAxisSpacing: 20,
         children: const [
-          CardWidget(svgPath: "../asset/icons/oxigenacion_sangre.svg", text: 'oxigenacion de sangre', color: Colors.red, onTap: null),
-          CardWidget(svgPath: "../asset/icons/pulso_cardiaco.svg", text: 'pulso cardiaco', color: Colors.purple, onTap: null),
-          CardWidget(svgPath: "../asset/icons/pulso_cardiaco.svg", text: 'pulso cardiaco', color: Colors.yellow, onTap: null),
-          CardWidget(svgPath: "../asset/icons/pulso_cardiaco.svg", text: 'pulso cardiaco', color: null, onTap: null),
+          CardWidget(svgPath: "../asset/icons/oxigenacion_sangre.svg", text: 'ritmo cardiaco', color: Colors.red, onTap: null),
+          CardWidget(svgPath: "../asset/icons/pulso_cardiaco.svg", text: 'temperatura corporal', color: Colors.purple, onTap: TemperatureInterface()),
+          CardWidget(svgPath: "../asset/icons/pulso_cardiaco.svg", text: 'oxigenacion de sangre', color: Colors.yellow, onTap: null),
           CardWidget(svgPath: "../asset/icons/pulso_cardiaco.svg", text: 'personalizado', color: Colors.blue, onTap: PersonalizadoInterface()),
         ],
       ),
@@ -47,12 +47,14 @@ class CardWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 4.0,
+      elevation: 3.0,
       child: GestureDetector(
         onTap: onTap != null ? () => Navigator.push(context, MaterialPageRoute(builder: (context) => onTap!)) : null,
         child: Container(
+          width: 120.0,
           padding: const EdgeInsets.all(15.0),
           child: Column(
+            mainAxisSize: MainAxisSize.min, // Establece mainAxisSize en MainAxisSize.min
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               SizedBox(

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
 
+import 'oxigenacion.dart';
+
 class TemperatureInterface extends StatelessWidget {
-  const TemperatureInterface({super.key});
+  const TemperatureInterface({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +19,7 @@ class TemperatureInterface extends StatelessWidget {
 }
 
 class Dashboard extends StatefulWidget {
-  const Dashboard({super.key});
+  const Dashboard({Key? key}) : super(key: key);
 
   @override
   _DashboardState createState() => _DashboardState();
@@ -33,157 +35,74 @@ class _DashboardState extends State<Dashboard> {
   }
 
   Color getCircleColor() {
-    if (temperature >= 90) {
+    if (temperature >= 37.5) {
       return Colors.red;
-    } else if (temperature >= 70) {
-      return Colors.orange;
+    } else if (temperature >= 36.0 && temperature < 37.5) {
+      return Colors.yellow;
     } else {
       return Colors.green;
     }
+  }
+
+  void generateRandomTemperature() {
+    final random = Random();
+    const minTemperature = 35.5;
+    const maxTemperature = 41.0;
+    final newTemperature = minTemperature + random.nextDouble() * (maxTemperature - minTemperature);
+
+    updateTemperature(newTemperature);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Temperature Dashboard'),
-      ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Colors.blue, Colors.black],
-          ),
+        title: const Text('Mediciones de Temperatura'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context);
+          },
         ),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              const Text(
-                'Temperature',
-                style: TextStyle(
-                  fontSize: 24,
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text(
+              'Temperatura Actual',
+              style: TextStyle(
+                fontSize: 24.0,
+                fontWeight: FontWeight.bold,
               ),
-              const SizedBox(height: 10),
-              Container(
-                width: 200,
-                height: 200,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.black,
-                ),
-                child: Stack(
-                  children: [
-                    Center(
-                      child: Container(
-                        width: 180,
-                        height: 180,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white,
-                        ),
-                        child: Center(
-                          child: Text(
-                            '$temperature °C',
-                            style: const TextStyle(
-                              fontSize: 48,
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    CustomPaint(
-                      foregroundPainter: CircleProgressPainter(
-                        outlineColor: Colors.grey,
-                        progressColor: getCircleColor(),
-                        strokeWidth: 10,
-                        progress: min(temperature / 100, 1.0),
-                      ),
-                      child: Container(),
-                    ),
-                  ],
-                ),
+            ),
+            const SizedBox(height: 16.0),
+            Container(
+              width: 200.0,
+              height: 200.0,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: getCircleColor(),
               ),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: 200,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: () {
-                    // Simular actualización de temperatura
-                    double newTemperature = 25 + (DateTime.now().second % 10) / 10;
-                    updateTemperature(newTemperature);
-                  },
-                  child: const Text(
-                    'Actualizar',
-                    style: TextStyle(
-                      fontSize: 20,
-                      color: Colors.blue,
-                      fontWeight: FontWeight.bold,
-                    ),
+              child: Center(
+                child: Text(
+                  '${temperature.toStringAsFixed(1)} °C',
+                  style: const TextStyle(
+                    fontSize: 40.0,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
                   ),
                 ),
               ),
-            ],
-          ),
+            ),
+            const SizedBox(height: 16.0),
+            ElevatedButton(
+              onPressed: generateRandomTemperature,
+              child: const Text('Actualizar Temperatura'),
+            ),
+          ],
         ),
       ),
     );
-  }
-}
-
-class CircleProgressPainter extends CustomPainter {
-  final Color outlineColor;
-  final Color progressColor;
-  final double strokeWidth;
-  final double progress;
-
-  CircleProgressPainter({
-    required this.outlineColor,
-    required this.progressColor,
-    required this.strokeWidth,
-    required this.progress,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = outlineColor
-      ..strokeWidth = strokeWidth
-      ..style = PaintingStyle.stroke;
-
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = min(size.width / 2, size.height / 2) - strokeWidth / 2;
-
-    canvas.drawCircle(center, radius, paint);
-
-    final progressPaint = Paint()
-      ..color = progressColor
-      ..strokeWidth = strokeWidth
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
-
-    final progressAngle = 2 * pi * progress;
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius),
-      -pi / 2,
-      progressAngle,
-      false,
-      progressPaint,
-    );
-  }
-
-  @override
-  bool shouldRepaint(CircleProgressPainter oldDelegate) {
-    return progress != oldDelegate.progress ||
-        outlineColor != oldDelegate.outlineColor ||
-        progressColor != oldDelegate.progressColor ||
-        strokeWidth != oldDelegate.strokeWidth;
   }
 }
