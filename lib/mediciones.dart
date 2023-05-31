@@ -144,6 +144,7 @@ class _MedicionesInterfaceState
                         children: [
                           ElevatedButton(
                             onPressed: allDataAvailable && !measuringTemperature ? sendData : null,
+                            
                             style: ElevatedButton.styleFrom(
                               padding: EdgeInsets.zero,
                               shape: CircleBorder(),
