@@ -68,7 +68,7 @@ class _OxygenSaturationInterfaceState extends State<OxygenSaturationInterface> {
   Future<void> Oxigeno() async {
     try {
       final response = await http.get(
-          Uri.parse('http://192.168.1.11:5000/oxigeno')); // Ethernet con Cable
+          Uri.parse('http://192.168.1.104:5000/oxigeno')); // Ethernet con Cable
       // http://192.168.1.111:5000/enviar_temperatura    // WIFI sin cable
       if (response.statusCode == 200) {
         final decoded = jsonDecode(response.body) as Map<String, dynamic>;

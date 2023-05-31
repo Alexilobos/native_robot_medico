@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 class MedicionesInterface extends StatefulWidget {
   final String datosFormulario;
@@ -20,8 +23,83 @@ class _MedicionesInterfaceState
   bool measuringPulse = false;
   bool measuringTemperature = false;
 
+  TextEditingController datosFormularioController = TextEditingController();
+  String prompt = '';
+
   late AnimationController _animationController;
   late Animation<double> _buttonAnimation;
+
+  String temp = "0.0";
+  Future<void> triggerTemperatura() async {
+    try {
+      final response =
+          await http.get(Uri.parse('http://192.168.1.104:5000/temp_no_queue'));
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+        setState(() {
+          temp = decoded['Temperatura Corporal'];
+        });
+      } else {
+        print('Failed to trigger Python script');
+      }
+    } catch (e) {
+      print('Error: $e');
+    }
+  }
+
+  int oxigeno = 0;
+  Future<void> triggerOxigeno() async {
+    try {
+      final response =
+          await http.get(Uri.parse('http://192.168.1.104:5000/oxi_no_queue'));
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+        setState(() {
+          oxigeno = decoded['Oxigenación'];
+        });
+      } else {
+        print('Failed to trigger Python script');
+      }
+    } catch (e) {
+      print('Error: $e');
+    }
+  }
+
+  int pulso = 0;
+  Future<void> triggerPulso() async {
+    try {
+      final response =
+          await http.get(Uri.parse('http://192.168.1.104:5000/pulso_no_queue'));
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+        setState(() {
+          pulso = decoded['Pulso'];
+        });
+      } else {
+        print('Failed to trigger Python script');
+      }
+    } catch (e) {
+      print('Error: $e');
+    }
+  }
+
+  String respuestaGpt = '';
+  Future<void> consultaGpt(String data) async {
+    var url = Uri.parse('http://192.168.1.104:5000/consultagpt');
+    var response = await http.post(url, body: {'data': data});
+    setState(() {
+      respuestaGpt = response.body;
+    });
+  }
+
+  String respuestaVoz = '';
+  Future<void> recomendacionGpt(String data) async {
+    var url = Uri.parse('http://192.168.1.104:5000/recomendacion-gpt');
+    var response = await http.post(url, body: {'data': data});
+    setState(() {
+      respuestaVoz = response.body;
+    });
+  }
 
   @override
   void initState() {
@@ -110,7 +188,8 @@ class _MedicionesInterfaceState
                         measuringOxygenation,
                         measuringOxygenation ? 'Medición en curso...' : '$oxygenation%',
                         Colors.red,
-                        startOxygenationMeasurement,
+                        triggerOxigeno
+                        //startOxygenationMeasurement,
                       ),
                     ),
                     const SizedBox(width: 16),
@@ -120,7 +199,8 @@ class _MedicionesInterfaceState
                         measuringPulse,
                         measuringPulse ? 'Medición en curso...' : '$pulse bpm',
                         Colors.blue,
-                        startPulseMeasurement,
+                        triggerPulso
+                        //startPulseMeasurement,
                       ),
                     ),
                   ],
@@ -135,7 +215,8 @@ class _MedicionesInterfaceState
                         measuringTemperature,
                         measuringTemperature ? 'Medición en curso...' : '$temperature °C',
                         Colors.green,
-                        startTemperatureMeasurement,
+                        triggerTemperatura
+                        //startTemperatureMeasurement,
                       ),
                     ),
                     const SizedBox(width: 16),
@@ -143,12 +224,21 @@ class _MedicionesInterfaceState
                       child: Column(
                         children: [
                           ElevatedButton(
-                            onPressed: allDataAvailable && !measuringTemperature ? sendData : null,
+                            onPressed: (){
+                              /*allDataAvailable && measuringTemperature ?*/ sendData /*: true*/;
+                              setState(() {
+                                prompt =
+                                    '${datosFormularioController.text}\nMis signos vitales son: \nTemperatura: $temp, %Oxigenacion: $oxigeno, Pulso: $pulso';
+                              });
+                              consultaGpt(prompt);
+                              recomendacionGpt(prompt);
+                            },//allDataAvailable && !measuringTemperature ? sendData : null,
+                            
                             
                             style: ElevatedButton.styleFrom(
                               padding: EdgeInsets.zero,
-                              shape: CircleBorder(),
-                              primary: allDataAvailable ? Color.fromARGB(255, 90, 152, 251) : Colors.grey[200],
+                              shape: const CircleBorder(),
+                              primary: /*allDataAvailable ?*/ const Color.fromARGB(255, 90, 152, 251)/* : Colors.grey[200]*/,
                               elevation: 3.0,
                             ),
                             child: AnimatedBuilder(
@@ -169,6 +259,13 @@ class _MedicionesInterfaceState
                           const SizedBox(height: 8),
                           Text(
                             'Enviar Datos',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: allDataAvailable ? Colors.black : Colors.grey,
+                            ),
+                          ),
+                          Text(
+                            respuestaGpt,
                             style: TextStyle(
                               fontSize: 12,
                               color: allDataAvailable ? Colors.black : Colors.grey,
