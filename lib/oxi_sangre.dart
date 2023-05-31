@@ -1,58 +1,61 @@
-import 'dart:convert';
-//import 'dart:ffi';
-
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'dart:math';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
-class TemperatureInterface extends StatefulWidget {
-  const TemperatureInterface({Key? key}) : super(key: key);
+class OxygenSaturationInterface extends StatefulWidget {
+  const OxygenSaturationInterface({Key? key}) : super(key: key);
 
   @override
-  _TemperatureInterfaceState createState() => _TemperatureInterfaceState();
+  _OxygenSaturationInterfaceState createState() =>
+      _OxygenSaturationInterfaceState();
 }
 
-class _TemperatureInterfaceState extends State<TemperatureInterface> {
-  double temperature = 0.0;
-  bool measuringTemperature = false;
+class _OxygenSaturationInterfaceState extends State<OxygenSaturationInterface> {
+  double oxygenSaturation = 0.0;
+  bool measuringOxygenSaturation = false;
 
-  void startTemperatureMeasurement() {
+  void startOxygenSaturationMeasurement() {
     setState(() {
-      measuringTemperature = true;
+      measuringOxygenSaturation = true;
     });
 
-    // Simulate temperature measurement
+    // Simulate oxygen saturation measurement
     Future.delayed(const Duration(seconds: 3), () {
       setState(() {
-        measuringTemperature = false;
-        temperature = 36.5; // Set the measured temperature value
+        measuringOxygenSaturation = false;
+        final random = Random();
+        const minOxygenSaturation = 90.0;
+        const maxOxygenSaturation = 100.0;
+        oxygenSaturation = minOxygenSaturation +
+            random.nextDouble() * (maxOxygenSaturation - minOxygenSaturation);
       });
     });
   }
 
   Color getCircleColor() {
-    if (temp >= 37.5) {
-      return Colors.red;
-    } else if (temperature >= 36.0 && temperature < 37.5) {
+    if (o2 >= 95.0) {
+      return Colors.green;
+    } else if (oxygenSaturation >= 90.0 && oxygenSaturation < 95.0) {
       return Colors.yellow;
     } else {
-      return Colors.green;
+      return Colors.red;
     }
   }
 
-  void generateRandomTemperature() {
+  void generateRandomOxygenSaturation() {
     final random = Random();
-    const minTemperature = 35.5;
-    const maxTemperature = 41.0;
-    final newTemperature = minTemperature +
-        random.nextDouble() * (maxTemperature - minTemperature);
+    const minOxygenSaturation = 90.0;
+    const maxOxygenSaturation = 100.0;
+    final newOxygenSaturation = minOxygenSaturation +
+        random.nextDouble() * (maxOxygenSaturation - minOxygenSaturation);
 
-    updateTemperature(newTemperature);
+    updateOxygenSaturation(newOxygenSaturation);
   }
 
-  void updateTemperature(double newTemperature) {
+  void updateOxygenSaturation(double newOxygenSaturation) {
     setState(() {
-      temperature = newTemperature;
+      oxygenSaturation = newOxygenSaturation;
     });
   }
 
@@ -60,17 +63,17 @@ class _TemperatureInterfaceState extends State<TemperatureInterface> {
     TRIGGER QUE EJECUTA EL PYTHON DEL RASPBERRY 
   */
 
-  double temp = 0.00;
+  int o2 = 0;
 
-  Future<void> triggerPythonScript() async {
+  Future<void> Oxigeno() async {
     try {
-      final response = await http.get(Uri.parse(
-          'http://192.168.1.11:5000/enviar_temperatura')); // Ethernet con Cable
+      final response = await http.get(
+          Uri.parse('http://192.168.1.11:5000/oxigeno')); // Ethernet con Cable
       // http://192.168.1.111:5000/enviar_temperatura    // WIFI sin cable
       if (response.statusCode == 200) {
         final decoded = jsonDecode(response.body) as Map<String, dynamic>;
         setState(() {
-          temp = decoded['Temperatura Corporal'];
+          o2 = decoded['Oxigenación'];
         });
       } else {
         print('Failed to trigger Python script');
@@ -84,7 +87,7 @@ class _TemperatureInterfaceState extends State<TemperatureInterface> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Mediciones de Temperatura'),
+        title: const Text('Mediciones de Oxigenación'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
@@ -97,7 +100,7 @@ class _TemperatureInterfaceState extends State<TemperatureInterface> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Text(
-              'Temperatura Actual',
+              'Nivel de Oxigenación Actual',
               style: TextStyle(
                 fontSize: 24.0,
                 fontWeight: FontWeight.bold,
@@ -116,15 +119,15 @@ class _TemperatureInterfaceState extends State<TemperatureInterface> {
                 children: [
                   AnimatedContainer(
                     duration: const Duration(seconds: 3),
-                    width: measuringTemperature ? 180 : 0,
-                    height: measuringTemperature ? 180 : 0,
+                    width: measuringOxygenSaturation ? 180 : 0,
+                    height: measuringOxygenSaturation ? 180 : 0,
                     decoration: const BoxDecoration(
                       shape: BoxShape.circle,
                       color: Colors.green,
                     ),
                   ),
                   Text(
-                    '$temp °C',
+                    '$o2 SpO2',
                     style: const TextStyle(
                       fontSize: 40.0,
                       fontWeight: FontWeight.bold,
@@ -136,8 +139,8 @@ class _TemperatureInterfaceState extends State<TemperatureInterface> {
             ),
             const SizedBox(height: 16.0),
             ElevatedButton(
-              onPressed: triggerPythonScript,
-              child: const Text('Actualizar Temperatura'),
+              onPressed: Oxigeno,
+              child: const Text('Actualizar Oxigenación'),
             ),
           ],
         ),

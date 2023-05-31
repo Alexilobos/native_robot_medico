@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-
+import 'package:native_robot/oxi_sangre.dart';
+import 'package:native_robot/ritmocardiaco.dart';
 import 'personalizado.dart';
 import 'temperatura.dart';
 
@@ -11,20 +12,56 @@ class GridCardApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Grid Card Interface'),
+        title: const Text('CareTest'),
       ),
-      body: GridView.count(
-        crossAxisCount: 3,
+      body: Container(
         padding: const EdgeInsets.all(16.0),
-        childAspectRatio: 1 / 2,
-        mainAxisSpacing: 20,
-        crossAxisSpacing: 20,
-        children: const [
-          CardWidget(svgPath: "../asset/icons/oxigenacion_sangre.svg", text: 'ritmo cardiaco', color: Colors.red, onTap: null),
-          CardWidget(svgPath: "../asset/icons/pulso_cardiaco.svg", text: 'temperatura corporal', color: Colors.purple, onTap: TemperatureInterface()),
-          CardWidget(svgPath: "../asset/icons/pulso_cardiaco.svg", text: 'oxigenacion de sangre', color: Colors.yellow, onTap: null),
-          CardWidget(svgPath: "../asset/icons/pulso_cardiaco.svg", text: 'personalizado', color: Colors.blue, onTap: PersonalizadoInterface()),
-        ],
+        child: GridView(
+          shrinkWrap: true,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 5,
+            mainAxisSpacing: 5
+          ),
+          children: const [
+            CardWidget(
+              svgPath: "asset/icons/oxigenacion_sangre.svg",
+              text: 'ritmo cardiaco',
+              color: Colors.red,
+              onTap: HeartRateInterface(),
+              width: 100.0,
+              height: 100.0,
+              backgroundColor: Colors.white,
+            ),
+            CardWidget(
+              svgPath: "asset/icons/pulso_cardiaco.svg",
+              text: 'temperatura corporal',
+              color: Colors.purple,
+              onTap: TemperatureInterface(),
+              width: 100.0,
+              height: 100.0,
+              backgroundColor: Colors.white,
+            ),
+            CardWidget(
+              svgPath: "asset/icons/pulso_cardiaco.svg",
+              text: 'oxigenacion de sangre',
+              color: Colors.yellow,
+              onTap: OxygenSaturationInterface(),
+              width: 100.0,
+              height: 100.0,
+              backgroundColor: Colors.white,
+            ),
+            CardWidget(
+              svgPath: "asset/icons/pulso_cardiaco.svg",
+              text: 'personalizado',
+              color: Colors.blue,
+              onTap: PersonalizadoInterface(),
+              width: 100.0,
+              height: 100.0,
+              backgroundColor: Colors.white,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -35,6 +72,9 @@ class CardWidget extends StatelessWidget {
   final String text;
   final Color? color;
   final Widget? onTap;
+  final double width;
+  final double height;
+  final Color? backgroundColor;
 
   const CardWidget({
     Key? key,
@@ -42,20 +82,30 @@ class CardWidget extends StatelessWidget {
     required this.text,
     this.color,
     this.onTap,
+    required this.width,
+    required this.height,
+    this.backgroundColor,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 3.0,
-      child: GestureDetector(
-        onTap: onTap != null ? () => Navigator.push(context, MaterialPageRoute(builder: (context) => onTap!)) : null,
+    return GestureDetector(
+      onTap: onTap != null
+          ? () => Navigator.push(
+              context, MaterialPageRoute(builder: (context) => onTap!))
+          : null,
+      child: Card(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+        color: backgroundColor,
         child: Container(
-          width: 120.0,
+          width: width,
+          height: height,
           padding: const EdgeInsets.all(15.0),
           child: Column(
-            mainAxisSize: MainAxisSize.min, // Establece mainAxisSize en MainAxisSize.min
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               SizedBox(
                 width: 55.0,

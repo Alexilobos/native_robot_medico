@@ -1,58 +1,59 @@
-import 'dart:convert';
-//import 'dart:ffi';
-
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'dart:math';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
-class TemperatureInterface extends StatefulWidget {
-  const TemperatureInterface({Key? key}) : super(key: key);
+class HeartRateInterface extends StatefulWidget {
+  const HeartRateInterface({Key? key}) : super(key: key);
 
   @override
-  _TemperatureInterfaceState createState() => _TemperatureInterfaceState();
+  _HeartRateInterfaceState createState() => _HeartRateInterfaceState();
 }
 
-class _TemperatureInterfaceState extends State<TemperatureInterface> {
-  double temperature = 0.0;
-  bool measuringTemperature = false;
+class _HeartRateInterfaceState extends State<HeartRateInterface> {
+  int heartRate = 0;
+  bool measuringHeartRate = false;
 
-  void startTemperatureMeasurement() {
+  void startHeartRateMeasurement() {
     setState(() {
-      measuringTemperature = true;
+      measuringHeartRate = true;
     });
 
-    // Simulate temperature measurement
+    // Simulate heart rate measurement
     Future.delayed(const Duration(seconds: 3), () {
       setState(() {
-        measuringTemperature = false;
-        temperature = 36.5; // Set the measured temperature value
+        measuringHeartRate = false;
+        final random = Random();
+        const minHeartRate = 60;
+        const maxHeartRate = 100;
+        heartRate = minHeartRate + random.nextInt(maxHeartRate - minHeartRate);
       });
     });
   }
 
   Color getCircleColor() {
-    if (temp >= 37.5) {
+    if (hb >= 90) {
       return Colors.red;
-    } else if (temperature >= 36.0 && temperature < 37.5) {
+    } else if (heartRate >= 60 && heartRate < 90) {
       return Colors.yellow;
     } else {
       return Colors.green;
     }
   }
 
-  void generateRandomTemperature() {
+  void generateRandomHeartRate() {
     final random = Random();
-    const minTemperature = 35.5;
-    const maxTemperature = 41.0;
-    final newTemperature = minTemperature +
-        random.nextDouble() * (maxTemperature - minTemperature);
+    const minHeartRate = 60;
+    const maxHeartRate = 100;
+    final newHeartRate =
+        minHeartRate + random.nextInt(maxHeartRate - minHeartRate);
 
-    updateTemperature(newTemperature);
+    updateHeartRate(newHeartRate);
   }
 
-  void updateTemperature(double newTemperature) {
+  void updateHeartRate(int newHeartRate) {
     setState(() {
-      temperature = newTemperature;
+      heartRate = newHeartRate;
     });
   }
 
@@ -60,17 +61,17 @@ class _TemperatureInterfaceState extends State<TemperatureInterface> {
     TRIGGER QUE EJECUTA EL PYTHON DEL RASPBERRY 
   */
 
-  double temp = 0.00;
+  int hb = 0;
 
-  Future<void> triggerPythonScript() async {
+  Future<void> Pulso() async {
     try {
-      final response = await http.get(Uri.parse(
-          'http://192.168.1.11:5000/enviar_temperatura')); // Ethernet con Cable
+      final response = await http.get(
+          Uri.parse('http://192.168.1.11:5000/pulso')); // Ethernet con Cable
       // http://192.168.1.111:5000/enviar_temperatura    // WIFI sin cable
       if (response.statusCode == 200) {
         final decoded = jsonDecode(response.body) as Map<String, dynamic>;
         setState(() {
-          temp = decoded['Temperatura Corporal'];
+          hb = decoded['Pulso'];
         });
       } else {
         print('Failed to trigger Python script');
@@ -84,7 +85,7 @@ class _TemperatureInterfaceState extends State<TemperatureInterface> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Mediciones de Temperatura'),
+        title: const Text('Mediciones de Ritmo Cardíaco'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
@@ -97,7 +98,7 @@ class _TemperatureInterfaceState extends State<TemperatureInterface> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Text(
-              'Temperatura Actual',
+              'Ritmo Cardíaco Actual',
               style: TextStyle(
                 fontSize: 24.0,
                 fontWeight: FontWeight.bold,
@@ -116,15 +117,15 @@ class _TemperatureInterfaceState extends State<TemperatureInterface> {
                 children: [
                   AnimatedContainer(
                     duration: const Duration(seconds: 3),
-                    width: measuringTemperature ? 180 : 0,
-                    height: measuringTemperature ? 180 : 0,
+                    width: measuringHeartRate ? 180 : 0,
+                    height: measuringHeartRate ? 180 : 0,
                     decoration: const BoxDecoration(
                       shape: BoxShape.circle,
                       color: Colors.green,
                     ),
                   ),
                   Text(
-                    '$temp °C',
+                    '$hb',
                     style: const TextStyle(
                       fontSize: 40.0,
                       fontWeight: FontWeight.bold,
@@ -136,8 +137,8 @@ class _TemperatureInterfaceState extends State<TemperatureInterface> {
             ),
             const SizedBox(height: 16.0),
             ElevatedButton(
-              onPressed: triggerPythonScript,
-              child: const Text('Actualizar Temperatura'),
+              onPressed: Pulso,
+              child: const Text('Actualizar Ritmo Cardíaco'),
             ),
           ],
         ),
