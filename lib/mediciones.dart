@@ -1,7 +1,4 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
 class MedicionesInterface extends StatefulWidget {
   final String datosFormulario;
@@ -9,10 +6,12 @@ class MedicionesInterface extends StatefulWidget {
       : super(key: key);
 
   @override
-  _MedicionesInterface createState() => _MedicionesInterface();
+  _MedicionesInterfaceState createState() =>
+      _MedicionesInterfaceState();
 }
 
-class _MedicionesInterface extends State<MedicionesInterface>
+class _MedicionesInterfaceState
+    extends State<MedicionesInterface>
     with SingleTickerProviderStateMixin {
   double oxygenation = 0.0;
   int pulse = 0;
@@ -24,12 +23,8 @@ class _MedicionesInterface extends State<MedicionesInterface>
   late AnimationController _animationController;
   late Animation<double> _buttonAnimation;
 
-  TextEditingController datosFormularioController = TextEditingController();
-  String prompt = '';
-
   @override
   void initState() {
-    super.initState();
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 300),
@@ -40,13 +35,7 @@ class _MedicionesInterface extends State<MedicionesInterface>
         curve: Curves.easeInOut,
       ),
     );
-    datosFormularioController.text = widget.datosFormulario;
-  }
-
-  @override
-  void dispose() {
-    datosFormularioController.dispose();
-    super.dispose();
+    super.initState();
   }
 
   void startOxygenationMeasurement() {
@@ -98,211 +87,99 @@ class _MedicionesInterface extends State<MedicionesInterface>
     // Add any animation or further logic you need when sending data
   }
 
-  /*
-    TRIGGERS QUE EJECUTAN LAS FUNCIONES DE PYTHON
-  */
-
-  String temp = "0.0";
-  Future<void> triggerTemperatura() async {
-    try {
-      final response =
-          await http.get(Uri.parse('http://192.168.1.11:5000/temp_no_queue'));
-      if (response.statusCode == 200) {
-        final decoded = jsonDecode(response.body) as Map<String, dynamic>;
-        setState(() {
-          temp = decoded['Temperatura Corporal'];
-        });
-      } else {
-        // ignore: avoid_print
-        print('Failed to trigger Python script');
-      }
-    } catch (e) {
-      // ignore: avoid_print
-      print('Error: $e');
-    }
-  }
-
-  int oxigeno = 0;
-  Future<void> triggerOxigeno() async {
-    try {
-      final response =
-          await http.get(Uri.parse('http://192.168.1.11:5000/oxi_no_queue'));
-      if (response.statusCode == 200) {
-        final decoded = jsonDecode(response.body) as Map<String, dynamic>;
-        setState(() {
-          oxigeno = decoded['Oxigenación'];
-        });
-      } else {
-        // ignore: avoid_print
-        print('Failed to trigger Python script');
-      }
-    } catch (e) {
-      // ignore: avoid_print
-      print('Error: $e');
-    }
-  }
-
-  int pulso = 0;
-  Future<void> triggerPulso() async {
-    try {
-      final response =
-          await http.get(Uri.parse('http://192.168.1.11:5000/pulso_no_queue'));
-      if (response.statusCode == 200) {
-        final decoded = jsonDecode(response.body) as Map<String, dynamic>;
-        setState(() {
-          pulso = decoded['Pulso'];
-        });
-      } else {
-        // ignore: avoid_print
-        print('Failed to trigger Python script');
-      }
-    } catch (e) {
-      // ignore: avoid_print
-      print('Error: $e');
-    }
-  }
-
-  String respuestaGpt = '';
-  Future<void> consultaGpt(String data) async {
-    var url = Uri.parse('http://127.0.0.1:5000/consultagpt');
-    var response = await http.post(url, body: {'data': data});
-    setState(() {
-      respuestaGpt = response.body;
-    });
-  }
-
-  String respuestaVoz = '';
-  Future<void> recomendacionGpt(String data) async {
-    var url = Uri.parse('http://127.0.0.1:5000/recomendacion-gpt');
-    var response = await http.post(url, body: {'data': data});
-    setState(() {
-      respuestaVoz = response.body;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     bool allDataAvailable = temperature != 0 && pulse != 0 && oxygenation != 0;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Mediciones de Salud'),
       ),
       body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: _buildMeasurementCard(
-                      'Oxigenación',
-                      measuringOxygenation,
-                      measuringOxygenation
-                          ? 'Medición en curso...'
-                          : '$oxigeno%',
-                      Colors.red,
-                      triggerOxigeno,
-                      startOxygenationMeasurement,
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: _buildMeasurementCard(
+                        'Oxigenación',
+                        measuringOxygenation,
+                        measuringOxygenation ? 'Medición en curso...' : '$oxygenation%',
+                        Colors.red,
+                        startOxygenationMeasurement,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: _buildMeasurementCard(
-                      'Pulsaciones',
-                      measuringPulse,
-                      measuringPulse ? 'Medición en curso...' : '$pulso bpm',
-                      Colors.blue,
-                      triggerPulso,
-                      startPulseMeasurement,
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _buildMeasurementCard(
+                        'Pulsaciones',
+                        measuringPulse,
+                        measuringPulse ? 'Medición en curso...' : '$pulse bpm',
+                        Colors.blue,
+                        startPulseMeasurement,
+                      ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: _buildMeasurementCard(
-                      'Temperatura',
-                      measuringTemperature,
-                      measuringTemperature
-                          ? 'Medición en curso...'
-                          : '$temp °C',
-                      Colors.green,
-                      triggerTemperatura,
-                      startTemperatureMeasurement,
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: _buildMeasurementCard(
+                        'Temperatura',
+                        measuringTemperature,
+                        measuringTemperature ? 'Medición en curso...' : '$temperature °C',
+                        Colors.green,
+                        startTemperatureMeasurement,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      children: [
-                        ElevatedButton(
-                          onPressed:
-                              allDataAvailable && !measuringTemperature
-                                  ? sendData
-                                  : null,
-                          style: ElevatedButton.styleFrom(
-                            padding: EdgeInsets.zero,
-                            shape: CircleBorder(),
-                            primary: allDataAvailable
-                                ? Color.fromARGB(255, 90, 152, 251)
-                                : Colors.grey[200],
-                            elevation: 3.0,
-                          ),
-                          child: AnimatedBuilder(
-                            animation: _buttonAnimation,
-                            builder: (context, child) {
-                              return Transform.scale(
-                                scale: _buttonAnimation.value,
-                                child: child,
-                              );
-                            },
-                            child: const SizedBox(
-                              width: 60,
-                              height: 60,
-                              child: Icon(Icons.send),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        children: [
+                          ElevatedButton(
+                            onPressed: allDataAvailable && !measuringTemperature ? sendData : null,
+                            style: ElevatedButton.styleFrom(
+                              padding: EdgeInsets.zero,
+                              shape: CircleBorder(),
+                              primary: allDataAvailable ? Color.fromARGB(255, 90, 152, 251) : Colors.grey[200],
+                              elevation: 3.0,
+                            ),
+                            child: AnimatedBuilder(
+                              animation: _buttonAnimation,
+                              builder: (context, child) {
+                                return Transform.scale(
+                                  scale: _buttonAnimation.value,
+                                  child: child,
+                                );
+                              },
+                              child: const SizedBox(
+                                width: 60,
+                                height: 60,
+                                child: Icon(Icons.send),
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Enviar Datos',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: allDataAvailable
-                                ? Colors.black
-                                : Colors.grey,
+                          const SizedBox(height: 8),
+                          Text(
+                            'Enviar Datos',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: allDataAvailable ? Colors.black : Colors.grey,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16.0),
-              ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    prompt =
-                        '${datosFormularioController.text}\nMis signos vitales son: \nTemperatura: $temp, %Oxigenacion: $oxigeno, Pulso: $pulso';
-                  });
-                  //recomendacionGpt(prompt);
-                  //consultaGpt(prompt);
-                },
-                child: const Text('Realizar consulta personalizada'),
-              ),
-              Text(
-                respuestaGpt,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+                  ],
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -315,7 +192,6 @@ class _MedicionesInterface extends State<MedicionesInterface>
     String measurementValue,
     Color color,
     VoidCallback onPressed,
-    VoidCallback startMeasurement,
   ) {
     return Card(
       elevation: 3.0,
@@ -365,19 +241,18 @@ class _MedicionesInterface extends State<MedicionesInterface>
             ),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: measuring ? null : startMeasurement,
+              onPressed: measuring ? null : onPressed,
               child: const Text('Iniciar Medición'),
-            ),
-            const SizedBox(height: 8),
-            ElevatedButton(
-              onPressed: allDataAvailable && !measuringTemperature
-                  ? sendData
-                  : null,
-              child: const Text('Enviar Datos'),
             ),
           ],
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
   }
 }
