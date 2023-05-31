@@ -1,6 +1,4 @@
 import 'dart:convert';
-//import 'dart:ffi';
-
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:math';
@@ -92,7 +90,14 @@ class _TemperatureInterfaceState extends State<TemperatureInterface> {
           },
         ),
       ),
-      body: Center(
+      body: Container(
+        alignment: Alignment.center,
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage("../asset/temperaturafondo.gif"),
+            fit: BoxFit.fill
+          )
+        ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -118,9 +123,9 @@ class _TemperatureInterfaceState extends State<TemperatureInterface> {
                     duration: const Duration(seconds: 3),
                     width: measuringTemperature ? 180 : 0,
                     height: measuringTemperature ? 180 : 0,
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Colors.green,
+                      color: getCircleColor(), //Colors.green.shade100.withOpacity(0.1), // Establece la opacidad del color verde a 0.5
                     ),
                   ),
                   Text(
@@ -137,7 +142,26 @@ class _TemperatureInterfaceState extends State<TemperatureInterface> {
             const SizedBox(height: 16.0),
             ElevatedButton(
               onPressed: triggerPythonScript,
-              child: const Text('Actualizar Temperatura'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.transparent, // Establece el color de fondo como transparente
+                elevation: 0, // Elimina la sombra del botón
+                shape: RoundedRectangleBorder( // Establece el borde del botón
+                  borderRadius: BorderRadius.circular(10),
+                  side: const BorderSide(color: Colors.white), // Establece un borde blanco alrededor del botón
+                ),
+              ),
+              child: const Text(
+                'Actualizar Temperatura',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              )/*.frosted(
+                blur: 1,
+                borderRadius: BorderRadius.circular(15),
+                padding: const EdgeInsets.all(8),
+              ),*/
             ),
           ],
         ),

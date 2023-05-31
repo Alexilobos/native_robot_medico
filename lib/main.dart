@@ -1,196 +1,157 @@
-//import 'dart:math';
 import 'package:flutter/material.dart';
-
+import 'dart:async';
 import 'home.dart';
-
-void main() => runApp(const MyApp());
+void main() {
+  runApp(const MyApp());
+}
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-      home: RobotEyesApp(),
       debugShowCheckedModeBanner: false,
-    );
-  }
-}
-
-class RobotEyesApp extends StatelessWidget {
-  const RobotEyesApp({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 75, 72, 72),
-      body: InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const GridCardApp()),
-          );
-        },
-        child: OrientationBuilder(
-          builder: (context, orientation) {
-            return Center(
-              child: FractionallySizedBox(
-                widthFactor: orientation == Orientation.portrait ? 0.6 : 0.3,
-                heightFactor: 0.3,
-                child: const RobotEyes(),
-              ),
-            );
-          },
+      home: Scaffold(
+        backgroundColor: Colors.lightBlue,
+        body: Stack(
+          children: [
+            Center(child: Face()),
+          ],
         ),
       ),
     );
   }
 }
 
-class RobotEyes extends StatefulWidget {
-  const RobotEyes({Key? key}) : super(key: key);
+class Face extends StatefulWidget {
+  const Face({super.key});
 
   @override
-  _RobotEyesState createState() => _RobotEyesState();
+  // ignore: library_private_types_in_public_api
+  _FaceState createState() => _FaceState();
 }
 
-class _RobotEyesState extends State<RobotEyes>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
-  late Animation<Color?> _colorAnimation;
+class _FaceState extends State<Face> with SingleTickerProviderStateMixin {
+  bool _isSwitched = true; // Set to true to start in the off state
+  late AnimationController _controller;
 
   @override
   void initState() {
     super.initState();
-    _animationController = AnimationController(
-      duration: const Duration(milliseconds: 3000),
+    _controller = AnimationController(
       vsync: this,
-    )..repeat(reverse: true);
+      duration: const Duration(milliseconds: 300),
+    );
 
-    _colorAnimation = TweenSequence<Color?>(
-      [
-        TweenSequenceItem(
-          weight: 1.0,
-          tween: ColorTween(begin: Colors.transparent, end: Colors.transparent),
-        ),
-        TweenSequenceItem(
-          weight: 2.0,
-          tween: ColorTween(begin: Colors.transparent, end: Colors.white),
-        ),
-        TweenSequenceItem(
-          weight: 1.0,
-          tween: ColorTween(begin: Colors.white, end: Colors.white),
-        ),
-        TweenSequenceItem(
-          weight: 1.0,
-          tween: ColorTween(begin: Colors.white, end: Colors.white),
-        ),
-        TweenSequenceItem(
-          weight: 1.0,
-          tween: ColorTween(begin: Colors.white, end: Colors.white),
-        ),
-        TweenSequenceItem(
-          weight: 2.0,
-          tween: ColorTween(begin: Colors.white, end: Colors.blue),
-        ),
-        TweenSequenceItem(
-          weight: 1.0,
-          tween: ColorTween(begin: Colors.blue, end: Colors.blue),
-        ),
-        TweenSequenceItem(
-          weight: 1.0,
-          tween: ColorTween(begin: Colors.blue, end: Colors.blue),
-        ),
-        TweenSequenceItem(
-          weight: 1.0,
-          tween: ColorTween(begin: Colors.blue, end: Colors.blue),
-        ),
-        TweenSequenceItem(
-          weight: 2.0,
-          tween: ColorTween(begin: Colors.blue, end: Colors.transparent),
-        ),
-      ],
-    ).animate(_animationController);
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
+    Timer.periodic(const Duration(seconds: 3), (Timer t) {
+      if (!_isSwitched) {
+        _controller.forward().then((value) => _controller.reverse());
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final containerSize = constraints.maxWidth * 0.2;
-
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Expanded(
-              child: AnimatedBuilder(
-                animation: _animationController,
-                builder: (context, child) {
-                  return Eye(
-                    color: Colors.black,
-                    borderColor: _colorAnimation.value,
-                    borderWidth: containerSize * 0.05,
-                    sizeFactor: containerSize,
-                  );
-                },
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTap: () {
+        if (!_isSwitched) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const GridCardApp()),
+          );
+        }
+      },
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width * 0.1),
+        child: Stack(
+          alignment: Alignment.center,
+          children: <Widget>[
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              height: 800, // Increase the height of the face
+              width: 1400, // Increase the width of the face
+              decoration: const BoxDecoration(
+                color: Colors.black,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(50),
+                  topRight: Radius.circular(50),
+                  bottomLeft: Radius.circular(50),
+                  bottomRight: Radius.circular(50),
+                ),
+              ),
+              margin: EdgeInsets.only(top: _isSwitched ? 60 : 90),
+            ),
+            Visibility(
+              visible: !_isSwitched,
+              child: Transform.translate(
+                offset: const Offset(-100, 0),
+                child: Eye(controller: _controller),
               ),
             ),
-            const SizedBox(width: 20),
-            Expanded(
-              child: AnimatedBuilder(
-                animation: _animationController,
-                builder: (context, child) {
-                  return Eye(
-                    color: Colors.black,
-                    borderColor: _colorAnimation.value,
-                    borderWidth: containerSize * 0.05,
-                    sizeFactor: containerSize,
-                  );
-                },
+            Visibility(
+              visible: !_isSwitched,
+              child: Transform.translate(
+                offset: const Offset(100, 0),
+                child: Eye(controller: _controller),
+              ),
+            ),
+            Positioned(
+              bottom: 20,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () {
+                    setState(() {
+                      _isSwitched = !_isSwitched;
+                    });
+                  },
+                  child: Icon(
+                    _isSwitched ? Icons.power_off : Icons.power_settings_new,
+                    color: _isSwitched ? Colors.red : Colors.green,
+                  ),
+                ),
               ),
             ),
           ],
-        );
-      },
+        ),
+      ),
     );
   }
 }
 
 class Eye extends StatelessWidget {
-  final Color color;
-  final Color? borderColor;
-  final double borderWidth;
-  final double sizeFactor;
-
   const Eye({
     Key? key,
-    required this.color,
-    required this.borderColor,
-    required this.borderWidth,
-    required this.sizeFactor,
+    required this.controller,
   }) : super(key: key);
+
+  final AnimationController controller;
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final containerSize = sizeFactor * constraints.maxWidth;
-
+    return AnimatedBuilder(
+      animation: controller,
+      builder: (context, child) {
         return Container(
-          width: containerSize,
-          height: containerSize,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: color,
-            border: Border.all(
-              color: borderColor ?? Colors.transparent,
-              width: borderWidth,
+          height: (1 - controller.value) * 60 + 20, // Changethe height calculation
+          width: 80, // Increase the width of the eyes
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Colors.blue,
+                Color(0xFF002966),
+                Colors.blue,
+              ],
+            ),
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(50),
+              topRight: Radius.circular(50),
+              bottomLeft: Radius.circular(50),
+              bottomRight: Radius.circular(50),
             ),
           ),
         );

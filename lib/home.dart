@@ -1,3 +1,4 @@
+//import 'package:blur/blur.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:native_robot/oxi_sangre.dart';
@@ -12,56 +13,52 @@ class GridCardApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('CareTest'),
-      ),
-      body: Container(
-        padding: const EdgeInsets.all(16.0),
-        child: GridView(
-          shrinkWrap: true,
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            crossAxisSpacing: 5,
-            mainAxisSpacing: 5
+        backgroundColor: Colors.blue.shade400,
+        title: const Text('CareTest'),        
+      ), 
+      body: Column(
+        children: [
+          const Image(
+            image: AssetImage("../asset/logo.jpeg"),
           ),
-          children: const [
-            CardWidget(
-              svgPath: "asset/icons/oxigenacion_sangre.svg",
-              text: 'ritmo cardiaco',
-              color: Colors.red,
-              onTap: HeartRateInterface(),
-              width: 100.0,
-              height: 100.0,
-              backgroundColor: Colors.white,
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: GridView.count(
+                shrinkWrap: true,
+                crossAxisCount: 4,
+                mainAxisSpacing: 15,
+                crossAxisSpacing: 15,
+                children: [
+                  CardWidget(
+                    svgPath: "../asset/icons/oxigenacion_sangre.svg",
+                    text: 'Ritmo cardiaco',
+                    color: Colors.blue.shade400,
+                    onTap: const HeartRateInterface(),
+                  ),
+                  const CardWidget(
+                    svgPath: "../asset/icons/pulso_cardiaco.svg",
+                    text: 'Temperatura corporal',
+                    color: Colors.purple,
+                    onTap: TemperatureInterface(),
+                  ),
+                  const CardWidget(
+                    svgPath: "../asset/icons/pulso_cardiaco.svg",
+                    text: 'Oxigenacion de sangre',
+                    color: Colors.yellow,
+                    onTap: OxygenSaturationInterface(),
+                  ),
+                  const CardWidget(
+                    svgPath: "../asset/icons/pulso_cardiaco.svg",
+                    text: 'Personalizado',
+                    color: Colors.black,
+                    onTap: PersonalizadoInterface(),
+                  ),
+                ],
+              ),
             ),
-            CardWidget(
-              svgPath: "asset/icons/pulso_cardiaco.svg",
-              text: 'temperatura corporal',
-              color: Colors.purple,
-              onTap: TemperatureInterface(),
-              width: 100.0,
-              height: 100.0,
-              backgroundColor: Colors.white,
-            ),
-            CardWidget(
-              svgPath: "asset/icons/pulso_cardiaco.svg",
-              text: 'oxigenacion de sangre',
-              color: Colors.yellow,
-              onTap: OxygenSaturationInterface(),
-              width: 100.0,
-              height: 100.0,
-              backgroundColor: Colors.white,
-            ),
-            CardWidget(
-              svgPath: "asset/icons/pulso_cardiaco.svg",
-              text: 'personalizado',
-              color: Colors.blue,
-              onTap: PersonalizadoInterface(),
-              width: 100.0,
-              height: 100.0,
-              backgroundColor: Colors.white,
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -72,9 +69,6 @@ class CardWidget extends StatelessWidget {
   final String text;
   final Color? color;
   final Widget? onTap;
-  final double width;
-  final double height;
-  final Color? backgroundColor;
 
   const CardWidget({
     Key? key,
@@ -82,9 +76,6 @@ class CardWidget extends StatelessWidget {
     required this.text,
     this.color,
     this.onTap,
-    required this.width,
-    required this.height,
-    this.backgroundColor,
   }) : super(key: key);
 
   @override
@@ -95,37 +86,42 @@ class CardWidget extends StatelessWidget {
               context, MaterialPageRoute(builder: (context) => onTap!))
           : null,
       child: Card(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(10)),
         ),
-        color: backgroundColor,
-        child: Container(
-          width: width,
-          height: height,
-          padding: const EdgeInsets.all(15.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              SizedBox(
-                width: 55.0,
-                height: 55.0,
-                child: SvgPicture.asset(
-                  svgPath,
-                  color: color,
-                ),
+        child: LayoutBuilder(
+          builder: (BuildContext context, BoxConstraints constraints) {
+            final iconSize = constraints.maxWidth * 0.4;
+            final textSize = constraints.maxHeight * 0.1;
+
+            return Container(
+              padding: const EdgeInsets.all(15.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: iconSize,
+                    height: iconSize,
+                    child: SvgPicture.asset(
+                      svgPath,
+                      color: color,
+                    ),
+                  ),
+                  SizedBox(height: constraints.maxHeight * 0.1),
+                  Text(
+                    text,
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: textSize,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
               ),
-              const SizedBox(height: 8.0),
-              Text(
-                text,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );

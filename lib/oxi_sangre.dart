@@ -95,7 +95,14 @@ class _OxygenSaturationInterfaceState extends State<OxygenSaturationInterface> {
           },
         ),
       ),
-      body: Center(
+      body: Container(
+        alignment: Alignment.center,
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage("../asset/giroscopio.gif"),
+            fit: BoxFit.fill
+          )
+        ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -140,7 +147,22 @@ class _OxygenSaturationInterfaceState extends State<OxygenSaturationInterface> {
             const SizedBox(height: 16.0),
             ElevatedButton(
               onPressed: Oxigeno,
-              child: const Text('Actualizar Oxigenación'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  side: const BorderSide(color: Colors.white),
+                )
+              ),
+              child: const Text(
+                'Actualizar Oxigenación',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
             ),
           ],
         ),

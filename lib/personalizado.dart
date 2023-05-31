@@ -1,56 +1,70 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'oxigenacion.dart';
+import 'mediciones.dart';
 
 class PersonalizadoInterface extends StatefulWidget {
   const PersonalizadoInterface({Key? key}) : super(key: key);
 
   @override
-  _PersonalizadoInterfaceState createState() => _PersonalizadoInterfaceState();
+  State<PersonalizadoInterface> createState() => _PersonalizadoInterfaceState();
 }
 
 class _PersonalizadoInterfaceState extends State<PersonalizadoInterface> {
+  String datosFormulario = ''; // Variable para almacenar los datos del formulario
+  String motivo = '';
+  String duracionSintomas = '';
+  String antecedentes = '';
+  String medicacionActual = '';
+  String accionesTomadas = '';
+
   bool isVoiceResponseEnabled = false;
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Formulario'),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () {
-              Navigator.pop(context);
-            },
-          ),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Formulario'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context);
+          },
         ),
-        body: Padding(
+      ),
+      body: Center(
+        child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Form(
             child: SingleChildScrollView(
               child: Column(
                 children: [
+                  const Image(
+                    image: AssetImage("../asset/logo.jpeg"),
+                  ),
                   TextFormField(
                     enabled: !isVoiceResponseEnabled,
                     decoration: const InputDecoration(
                       labelText: 'Motivo de la consulta',
                       icon: Icon(Icons.chat_bubble),
                     ),
+                    onChanged: (value) {
+                      setState(() {
+                        motivo = value;
+                      });
+                    },
                   ),
                   const SizedBox(height: 16.0),
                   TextFormField(
                     enabled: !isVoiceResponseEnabled,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: 'Duración de los síntomas',
-                      icon: const Icon(Icons.calendar_today),
-                      suffixIcon: IconButton(
-                        icon: const Icon(Icons.calendar_view_day),
-                        onPressed: () {
-                          // Aquí se puede mostrar un calendario para seleccionar la fecha
-                        },
-                      ),
+                      icon: Icon(Icons.calendar_today),
                     ),
+                    onChanged: (value) {
+                      setState(() {
+                        duracionSintomas = value;
+                      });
+                    },
                   ),
                   const SizedBox(height: 16.0),
                   TextFormField(
@@ -59,6 +73,11 @@ class _PersonalizadoInterfaceState extends State<PersonalizadoInterface> {
                       labelText: 'Antecedentes médicos relevantes',
                       icon: Icon(Icons.history),
                     ),
+                    onChanged: (value) {
+                      setState(() {
+                        antecedentes = value;
+                      });
+                    },
                     maxLines: null,
                   ),
                   const SizedBox(height: 16.0),
@@ -68,15 +87,11 @@ class _PersonalizadoInterfaceState extends State<PersonalizadoInterface> {
                       labelText: 'Medicación actual',
                       icon: Icon(Icons.medical_services),
                     ),
-                    maxLines: null,
-                  ),
-                  const SizedBox(height: 16.0),
-                  TextFormField(
-                    enabled: !isVoiceResponseEnabled,
-                    decoration: const InputDecoration(
-                      labelText: 'Acciones tomadas previamente',
-                      icon: Icon(Icons.playlist_add_check),
-                    ),
+                    onChanged: (value) {
+                      setState(() {
+                        medicacionActual = value;
+                      });
+                    },
                     maxLines: null,
                   ),
                   const SizedBox(height: 16.0),
@@ -89,7 +104,7 @@ class _PersonalizadoInterfaceState extends State<PersonalizadoInterface> {
                                   isVoiceResponseEnabled = false;
                                 });
                               },
-                              child: const Text('Desactivar respuesta por voz'),
+                              child: const Text('Desactivar Respuesta Por Voz'),
                             ),
                             const SizedBox(height: 16.0),
                             const RecordingButton(),
@@ -101,7 +116,7 @@ class _PersonalizadoInterfaceState extends State<PersonalizadoInterface> {
                               isVoiceResponseEnabled = true;
                             });
                           },
-                          child: const Text('Prefiero responder por voz'),
+                          child: const Text('Prefiero Responder Por Voz'),
                         ),
                   const SizedBox(height: 16.0),
                   ElevatedButton(
@@ -109,7 +124,12 @@ class _PersonalizadoInterfaceState extends State<PersonalizadoInterface> {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const OxygenPulseTemperatureInterface()),
+                        MaterialPageRoute(
+                          builder: (context) => MedicionesInterface(
+                            datosFormulario:
+                                'Motivo: $motivo\nDuracion de sintomas: $duracionSintomas\nAntecedentes medicos: $antecedentes\nMedicacion actual: $medicacionActual\nAcciones tomadas previamente: $accionesTomadas',
+                          ),
+                        ),
                       );
                     },
                   ),
@@ -124,13 +144,14 @@ class _PersonalizadoInterfaceState extends State<PersonalizadoInterface> {
 }
 
 class RecordingButton extends StatefulWidget {
-  const RecordingButton({super.key});
+  const RecordingButton({Key? key}) : super(key: key);
 
   @override
   _RecordingButtonState createState() => _RecordingButtonState();
 }
 
-class _RecordingButtonState extends State<RecordingButton> with SingleTickerProviderStateMixin {
+class _RecordingButtonState extends State<RecordingButton>
+    with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
 
   @override
@@ -160,14 +181,31 @@ class _RecordingButtonState extends State<RecordingButton> with SingleTickerProv
 
     if (isRecording) {
       print('Iniciando grabación');
-      GrabartriggerPythonScript();
+      startRecordingPythonScript();
     } else {
       print('Deteniendo grabación');
-      ParartriggerPythonScript();
+      stopRecordingPythonScript();
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Grabación'),
+            content: const Text('Grabación Guardada'),
+            actions: <Widget>[
+              TextButton(
+                child: const Text('OK'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
     }
   }
 
-  void GrabartriggerPythonScript() async {
+  void startRecordingPythonScript() async {
     try {
       await http.get(Uri.parse('http://127.0.0.1:5000/grabar'));
     } catch (e) {
@@ -175,7 +213,7 @@ class _RecordingButtonState extends State<RecordingButton> with SingleTickerProv
     }
   }
 
-  void ParartriggerPythonScript() async {
+  void stopRecordingPythonScript() async {
     try {
       await http.get(Uri.parse('http://127.0.0.1:5000/parar'));
     } catch (e) {

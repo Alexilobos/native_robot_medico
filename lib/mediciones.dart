@@ -1,5 +1,4 @@
 import 'dart:convert';
-//import 'dart:ffi';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -13,7 +12,8 @@ class MedicionesInterface extends StatefulWidget {
   _MedicionesInterface createState() => _MedicionesInterface();
 }
 
-class _MedicionesInterface extends State<MedicionesInterface> {
+class _MedicionesInterface extends State<MedicionesInterface>
+    with SingleTickerProviderStateMixin {
   double oxygenation = 0.0;
   int pulse = 0;
   double temperature = 0.0;
@@ -21,12 +21,25 @@ class _MedicionesInterface extends State<MedicionesInterface> {
   bool measuringPulse = false;
   bool measuringTemperature = false;
 
+  late AnimationController _animationController;
+  late Animation<double> _buttonAnimation;
+
   TextEditingController datosFormularioController = TextEditingController();
   String prompt = '';
 
   @override
   void initState() {
     super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+    _buttonAnimation = Tween<double>(begin: 1.0, end: 0.8).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: Curves.easeInOut,
+      ),
+    );
     datosFormularioController.text = widget.datosFormulario;
   }
 
@@ -78,6 +91,13 @@ class _MedicionesInterface extends State<MedicionesInterface> {
     });
   }
 
+  void sendData() {
+    // Code to send the measured data
+    // Add your logic here
+    print('Sending data...');
+    // Add any animation or further logic you need when sending data
+  }
+
   /*
     TRIGGERS QUE EJECUTAN LAS FUNCIONES DE PYTHON
   */
@@ -93,9 +113,11 @@ class _MedicionesInterface extends State<MedicionesInterface> {
           temp = decoded['Temperatura Corporal'];
         });
       } else {
+        // ignore: avoid_print
         print('Failed to trigger Python script');
       }
     } catch (e) {
+      // ignore: avoid_print
       print('Error: $e');
     }
   }
@@ -111,9 +133,11 @@ class _MedicionesInterface extends State<MedicionesInterface> {
           oxigeno = decoded['Oxigenación'];
         });
       } else {
+        // ignore: avoid_print
         print('Failed to trigger Python script');
       }
     } catch (e) {
+      // ignore: avoid_print
       print('Error: $e');
     }
   }
@@ -129,9 +153,11 @@ class _MedicionesInterface extends State<MedicionesInterface> {
           pulso = decoded['Pulso'];
         });
       } else {
+        // ignore: avoid_print
         print('Failed to trigger Python script');
       }
     } catch (e) {
+      // ignore: avoid_print
       print('Error: $e');
     }
   }
@@ -156,91 +182,141 @@ class _MedicionesInterface extends State<MedicionesInterface> {
 
   @override
   Widget build(BuildContext context) {
+    bool allDataAvailable = temperature != 0 && pulse != 0 && oxygenation != 0;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Mediciones de Salud'),
       ),
       body: SingleChildScrollView(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                        child: _buildMeasurementCard(
-                            'Oxigenación',
-                            measuringOxygenation,
-                            measuringOxygenation
-                                ? 'Medición en curso...'
-                                : '$oxigeno%',
-                            Colors.red,
-                            triggerOxigeno)),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: _buildMeasurementCard(
-                        'Pulsaciones',
-                        measuringPulse,
-                        measuringPulse ? 'Medición en curso...' : '$pulso bpm',
-                        Colors.blue,
-                        triggerPulso,
-                      ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: _buildMeasurementCard(
+                      'Oxigenación',
+                      measuringOxygenation,
+                      measuringOxygenation
+                          ? 'Medición en curso...'
+                          : '$oxigeno%',
+                      Colors.red,
+                      triggerOxigeno,
+                      startOxygenationMeasurement,
                     ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: _buildMeasurementCard(
-                        'Temperatura',
-                        measuringTemperature,
-                        measuringTemperature
-                            ? 'Medición en curso...'
-                            : '$temp °C',
-                        Colors.green,
-                        triggerTemperatura,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child:
-                          Container(), // Coloca aquí otro elemento si lo deseas
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16.0),
-                ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      prompt =
-                          '${datosFormularioController.text}\nMis signos vitales son: \nTemperatura: $temp, %Oxigenacion: $oxigeno, Pulso: $pulso';
-                    });
-                    //recomendacionGpt(prompt);
-                    //consultaGpt(prompt);
-                  },
-                  child: const Text('Realizar consulta personalizada'),
-                ),
-                Text(
-                  respuestaGpt,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
                   ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildMeasurementCard(
+                      'Pulsaciones',
+                      measuringPulse,
+                      measuringPulse ? 'Medición en curso...' : '$pulso bpm',
+                      Colors.blue,
+                      triggerPulso,
+                      startPulseMeasurement,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: _buildMeasurementCard(
+                      'Temperatura',
+                      measuringTemperature,
+                      measuringTemperature
+                          ? 'Medición en curso...'
+                          : '$temp °C',
+                      Colors.green,
+                      triggerTemperatura,
+                      startTemperatureMeasurement,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      children: [
+                        ElevatedButton(
+                          onPressed:
+                              allDataAvailable && !measuringTemperature
+                                  ? sendData
+                                  : null,
+                          style: ElevatedButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            shape: CircleBorder(),
+                            primary: allDataAvailable
+                                ? Color.fromARGB(255, 90, 152, 251)
+                                : Colors.grey[200],
+                            elevation: 3.0,
+                          ),
+                          child: AnimatedBuilder(
+                            animation: _buttonAnimation,
+                            builder: (context, child) {
+                              return Transform.scale(
+                                scale: _buttonAnimation.value,
+                                child: child,
+                              );
+                            },
+                            child: const SizedBox(
+                              width: 60,
+                              height: 60,
+                              child: Icon(Icons.send),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Enviar Datos',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: allDataAvailable
+                                ? Colors.black
+                                : Colors.grey,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16.0),
+              ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    prompt =
+                        '${datosFormularioController.text}\nMis signos vitales son: \nTemperatura: $temp, %Oxigenacion: $oxigeno, Pulso: $pulso';
+                  });
+                  //recomendacionGpt(prompt);
+                  //consultaGpt(prompt);
+                },
+                child: const Text('Realizar consulta personalizada'),
+              ),
+              Text(
+                respuestaGpt,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildMeasurementCard(String title, bool measuring,
-      String measurementValue, Color color, VoidCallback onPressed) {
+  Widget _buildMeasurementCard(
+    String title,
+    bool measuring,
+    String measurementValue,
+    Color color,
+    VoidCallback onPressed,
+    VoidCallback startMeasurement,
+  ) {
     return Card(
       elevation: 3.0,
       child: Padding(
@@ -289,8 +365,15 @@ class _MedicionesInterface extends State<MedicionesInterface> {
             ),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: measuring ? null : onPressed,
+              onPressed: measuring ? null : startMeasurement,
               child: const Text('Iniciar Medición'),
+            ),
+            const SizedBox(height: 8),
+            ElevatedButton(
+              onPressed: allDataAvailable && !measuringTemperature
+                  ? sendData
+                  : null,
+              child: const Text('Enviar Datos'),
             ),
           ],
         ),

@@ -32,9 +32,9 @@ class _HeartRateInterfaceState extends State<HeartRateInterface> {
   }
 
   Color getCircleColor() {
-    if (hb >= 90) {
+    if (hb >= 37.5) {
       return Colors.red;
-    } else if (heartRate >= 60 && heartRate < 90) {
+    } else if (heartRate >= 36.0 && heartRate < 37.5) {
       return Colors.yellow;
     } else {
       return Colors.green;
@@ -93,7 +93,15 @@ class _HeartRateInterfaceState extends State<HeartRateInterface> {
           },
         ),
       ),
-      body: Center(
+      
+      body: Container(
+        alignment: Alignment.center,
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage("../asset/ritmocardiacofondo.gif"),
+            fit: BoxFit.fill
+          )
+        ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -120,8 +128,11 @@ class _HeartRateInterfaceState extends State<HeartRateInterface> {
                     width: measuringHeartRate ? 180 : 0,
                     height: measuringHeartRate ? 180 : 0,
                     decoration: const BoxDecoration(
+                      image:  DecorationImage(
+                        image: AssetImage("../asset/ritmocardiacofondo.gif"),
+                        fit: BoxFit.fill
+                      ),
                       shape: BoxShape.circle,
-                      color: Colors.green,
                     ),
                   ),
                   Text(
@@ -138,6 +149,14 @@ class _HeartRateInterfaceState extends State<HeartRateInterface> {
             const SizedBox(height: 16.0),
             ElevatedButton(
               onPressed: Pulso,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.transparent, // Establece el color de fondo como transparente
+                elevation: 0, // Elimina la sombra del botón
+                shape: RoundedRectangleBorder( // Establece el borde del botón
+                  borderRadius: BorderRadius.circular(10),
+                  side: const BorderSide(color: Colors.white), // Establece un borde blanco alrededor del botón
+                ),
+              ),
               child: const Text('Actualizar Ritmo Cardíaco'),
             ),
           ],
